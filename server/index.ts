@@ -15,9 +15,9 @@ app.get('/', (req, res) => {
  */
 import loginRouters from './routes/login';
 import signupRouters from './routes/signup';
-import tripParametersRouters from './routes/tripParameters';
 import tripsRouters from './routes/trips';
 import usersRouters from './routes/users';
+import messageBoardRouters from './routes/messageBoard';
 
 /**
  * handle parsing request body
@@ -43,11 +43,9 @@ app.use(
  */
 app.use('/login', loginRouters);
 app.use('/signup', signupRouters);
-app.use('/tripParameters', tripParametersRouters);
 app.use('/trips', tripsRouters);
 app.use('/users', usersRouters);
-
-// route handler to respond with main app
+app.use('/messageBoard', messageBoardRouters);
 
 // catch-all route handler for any requests to an unknown route
 app.use((req, res) => {
