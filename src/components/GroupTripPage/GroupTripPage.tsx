@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import SoloPage from '../SoloPage/SoloPage';
 import MessageBoard from './MessageBoard';
+import Banner from '../PersistentComponents/Banner'; 
 
 //LATER - figure out how to pass these numbers down and not hardcode ...
 const tripGoals = {
@@ -61,6 +62,8 @@ const GroupTripPage: React.FC = () => {
 
   // render section. note tenary operator -- saying if user is null, display first set. else ... display the user selected
   return (
+    <div> 
+      <Banner />
     <div style={{ padding: '20px' }}>
       {!selectedUser ? (
         <>
@@ -137,6 +140,7 @@ const GroupTripPage: React.FC = () => {
           />
         </>
       )}
+    </div>
     </div>
   );
 };

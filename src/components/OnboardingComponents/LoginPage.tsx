@@ -9,7 +9,12 @@ import password_icon from '../../assets/password.png';
 
 import { ValidateForm } from './LoginValidation';
 
+import UserContext from '../UserContext'; 
+import { useContext } from 'react'; 
+
 const LoginPage = () => {
+  
+  const [user, setUser] = useContext(UserContext)
   //set up first initial state of our login form,
   // whenever client enter data, we will set the changed state
   const [loginData, setLoginData] = useState({
@@ -51,6 +56,7 @@ const LoginPage = () => {
           throw new Error(message);
         }
         const data = await response.json();
+        setUser({ name: loginData.email, email: loginData.email }); 
         navigate('/CreateJoinTrip');
         return data;
       } catch (error) {

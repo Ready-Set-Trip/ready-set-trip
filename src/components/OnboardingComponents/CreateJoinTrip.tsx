@@ -4,15 +4,21 @@
 
 //stretch goal: view old trips? button
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import shark_icon from '../../assets/shark.jpg';
 import './CreateJoinTrip.css';
+
+import UserContext from '../UserContext'; 
 
 const CreateJoinTrip = () => {
   const [id, setId] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const context = useContext(UserContext); 
+  const [user] = context; 
+
 
   //handleChange
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +31,9 @@ const CreateJoinTrip = () => {
       const response = await fetch(`/api/validate-id/${id}`);
       const data = await response.json();
       if (response.ok && data.id) {
-        navigate(`/GroupTripPage/${id}`);
+        navigate(`/GroupTripPage/${id}`, {
+          state: { userName: user?.name }
+        });
       } else {
         setError('Invalid Trip ID');
       }
