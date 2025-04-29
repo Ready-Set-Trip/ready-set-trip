@@ -8,7 +8,7 @@ const router = express.Router();
 
 // posting since with a get, we'd have to pass username/password through the URL
 router.post('/', loginController.verifyUser, (req, res) => {
-  res.status(201).json({ msg: `${res.locals.name} logged in!` });
+  res.status(201).json({ msg: `${res.locals.name} logged in!`, jwt: res.locals.token });
 });
 
 export default router;

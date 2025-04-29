@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import shark_icon from '../../assets/shark.jpg';
+import beach1_icon from '../../assets/beach1.jpg';
 import './CreateJoinTrip.css';
 
 const CreateJoinTrip = () => {
@@ -37,7 +37,7 @@ const CreateJoinTrip = () => {
   return (
     <div className='boxcontainer'>
       <div className='background_pic'>
-        <img src={shark_icon} alt='shark_picture' />
+        <img src={beach1_icon} alt='beach_vacation' />
       </div>
       <div className='createboxcontainer'>
         <div className='createbox'>Create a trip?</div>
