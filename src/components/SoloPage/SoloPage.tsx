@@ -9,15 +9,15 @@ import LangTracker from './LangTracker';
 
 // typescript define types of internal state
 interface ProgressState {
-  workout: number;
-  diet: number;
-  language: number;
+  workout_count: number;
+  diet_count: number;
+  language_count: number;
 }
 //typescript define props SoloPage is expecting
 interface SoloPageProps {
   username: string;
   progress: ProgressState;
-  tripGoals: { workout: number; diet: number; language: number };
+  tripGoals: { workout_count: number; diet_count: number; language_count: number };
   // prop function takes one arg progress -- iwhic is a ProgressState object, and returns nothign
   onProgressUpdate: (progress: ProgressState) => void;
 }
@@ -25,16 +25,16 @@ interface SoloPageProps {
 const SoloPage: React.FC<SoloPageProps> = ({
   username,
   progress,
-  tripGoals,
+  tripGoals, 
   onProgressUpdate,
 }) => {
   // takes key of ProgressState -> so, must be workout, diet, or language ... updates amount up to goal amount
   const handleIncrement = (key: keyof ProgressState) => {
-    const updatedProgress = {
+    const updatedValue = {
       ...progress,
       [key]: Math.min(progress[key] + 1, tripGoals[key]),
     };
-    onProgressUpdate(updatedProgress); // Pass updated progress back to GroupTripPage
+    onProgressUpdate(updatedValue); // Pass updated progress back to GroupTripPage
   };
 
   // renders the page ... progess.workout for example is the value currently in useState of Progress for "workout"
@@ -44,19 +44,19 @@ const SoloPage: React.FC<SoloPageProps> = ({
       <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem' }}>
         <WorkoutTracker
           //passes 3 props to tracker
-          value={progress.workout}
-          goal={tripGoals.workout}
-          onIncrement={() => handleIncrement('workout')}
+          value={progress.workout_count}
+          goal={tripGoals.workout_count}
+          onIncrement={() => handleIncrement('workout_count')}
         />
         <DietTracker
-          value={progress.diet}
-          goal={tripGoals.diet}
-          onIncrement={() => handleIncrement('diet')}
+          value={progress.diet_count}
+          goal={tripGoals.diet_count}
+          onIncrement={() => handleIncrement('diet_count')}
         />
         <LangTracker
-          value={progress.language}
-          goal={tripGoals.language}
-          onIncrement={() => handleIncrement('language')}
+          value={progress.language_count}
+          goal={tripGoals.language_count}
+          onIncrement={() => handleIncrement('language_count')}
         />
       </div>
     </div>

@@ -6,62 +6,152 @@
 // message board component pulled in here
 
 //import things you need!
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SoloPage from '../SoloPage/SoloPage';
 import MessageBoard from './MessageBoard';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 //LATER - figure out how to pass these numbers down and not hardcode ...
 
-const tripGoals = {
+type TripGoals = {
+  workout: number;
+  diet: number;
+  language: number;
+};
+
+const tripGoals: TripGoals = {
   workout: 20,
   diet: 15,
   language: 10,
 };
 
 //helper function for calculating total. also ts for progress.
-const calculateTotal = (progress: {
+const calculateTotal = (progress: Progress) => {
+  return progress.workout + progress.diet + progress.language;
+};
+
+//type definitions
+
+type Progress = {
   workout: number;
   diet: number;
   language: number;
-}) => {
-  return progress.workout + progress.diet + progress.language;
+};
+
+type UserProgress = {
+  username: string;
+  id: string;
+  workout_count: number;
+  diet_count: number;
+  language_count: number;
 };
 
 //define page's react componenet
 const GroupTripPage: React.FC = () => {
-  //useState for each user (keep track of which user is currentyl selected ... initialized to null (no user!))
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   const location = useLocation();
-  const tripId = location.state?.tripId;
+  // const tripId = location.state?.tripId;
+  const tripId = 'I1153';
 
-  //useState for any incremental progress for each user, in each of the 3 catgegories
-  const [groupProgress, setGroupProgress] = useState([
-    { username: 'Sandar', progress: { workout: 0, diet: 0, language: 0 } },
-    { username: 'Will', progress: { workout: 0, diet: 0, language: 0 } },
-    { username: 'Pete', progress: { workout: 0, diet: 0, language: 0 } },
-  ]);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [groupProgress, setGroupProgress] = useState<UserProgress[]>([]);
+
+  // const [groupStats, setGroupStats] = useState(null);
+
+  useEffect(() => {
+    if (!tripId) {
+      alert('No Trip Id!');
+      navigate('/');
+      return;
+    }
+    const fetchGroupStats = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:3000/trips/groupStats/${tripId}`
+        );
+        if (!res.ok) {
+          throw new Error('Failed to fetch group stats');
+        }
+        const data = await res.json();
+        console.log('res:', res);
+        console.log('data:', data);
+
+        const adjustProgress = data.usersAndTrackers.map((user: any) => ({
+          username: user.name,
+          id: user.id,
+          workout: user.workout_count,
+          diet: user.diet_count,
+          language: user.language_count,
+        }));
+        setGroupProgress(adjustProgress);
+        // setGroupStats(data);
+      } catch (error) {
+        console.error('Login error:', error);
+      }
+    };
+
+    fetchGroupStats();
+  }, [tripId, navigate]);
 
   // handles progress for a specific user.
   // if a username matches the username passed in, we update their progress
   // otherwise ... keep the user the same (don't update anything)
 
-  const handleProgressUpdate = (username: string, updatedProgress: any) => {
-    setGroupProgress((prevProgress) =>
-      prevProgress.map((user) =>
-        user.username === username
-          ? { ...user, progress: updatedProgress }
-          : user
-      )
-    );
+  const handleProgressUpdate = async (
+    userId: string,
+    habit: 'workout' | 'diet' | 'language',
+    updatedValue: number
+  ) => {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/trips/${userId}/${habit}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ updatedValue })
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error('Failed to update progress on backend');
+      }
+
+      const data = await res.json(); // your backend returns { countAfterIncrement: newCount }
+      console.log('PATCH response:', data);
+
+      setGroupProgress((prevProgress) =>
+        prevProgress.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                [habit]: data.countAfterIncrement,
+              }
+            : user
+        )
+      );
+    } catch (err) {
+      console.log('Error updating progress', err);
+    }
   };
 
   // sort the leaderboard (for each user, calc the total progress and sort from high to low)
   // groupProgress is unsorted list of Users. [...] makes a copy - don't mutate original.
   // calculateTotal(b.progress) - calculateTotal(a.progress) --> means if b's total is bigger that a's... etc.
   const sortedProgress = [...groupProgress].sort((a, b) => {
-    return calculateTotal(b.progress) - calculateTotal(a.progress);
+    return (
+      calculateTotal({
+        workout: b.workout_count,
+        diet: b.diet_count,
+        language: b.language_count,
+      }) -
+      calculateTotal({
+        workout: a.workout_count,
+        diet: a.diet_count,
+        language: a.language_count,
+      })
+    );
   });
 
   // render section. note tenary operator -- saying if user is null, display first set. else ... display the user selected
@@ -105,17 +195,21 @@ const GroupTripPage: React.FC = () => {
                     }}
                   >
                     #{index + 1} - {user.username} - Total:{' '}
-                    {calculateTotal(user.progress)}
+                    {calculateTotal({
+                      workout: user.workout_count,
+                      diet: user.diet_count,
+                      language: user.language_count,
+                    })}
                   </button>
                   <ul>
                     <li>
-                      Workout: {user.progress.workout} / {tripGoals.workout}
+                      Workout: {user.workout_count} / {tripGoals.workout}
                     </li>
                     <li>
-                      Diet: {user.progress.diet} / {tripGoals.diet}
+                      Diet: {user.diet_count} / {tripGoals.diet}
                     </li>
                     <li>
-                      Language: {user.progress.language} / {tripGoals.language}
+                      Language: {user.language_count} / {tripGoals.language}
                     </li>
                   </ul>
                 </div>
@@ -133,18 +227,28 @@ const GroupTripPage: React.FC = () => {
             Back to Group Page
           </button>
           <SoloPage
-            //giving props username, progress, tripGoals, onProgressUpdate to child component
-            // ".?" --> if find() works, then .progress (display progress) ... ELSE display initial state
-            username={selectedUser}
-            progress={
-              groupProgress.find((user) => user.username === selectedUser)
-                ?.progress || { workout: 0, diet: 0, language: 0 }
+            username={
+              groupProgress.find((user) => user.id === selectedUser)
+                ?.username || ''
             }
-            // selectedUser! --> ! is typescript telling SoloPage that selectedUser is not null. Tells React not to freak out.
-            // only way we'd get to this component anyway is if a user were selected by button.
-            tripGoals={tripGoals}
-            onProgressUpdate={(updatedProgress) =>
-              handleProgressUpdate(selectedUser!, updatedProgress)
+            progress={{
+              workout:
+                groupProgress.find((user) => user.id === selectedUser)
+                  ?.workout_count || 0,
+              diet:
+                groupProgress.find((user) => user.id === selectedUser)
+                  ?.diet_count || 0,
+              language:
+                groupProgress.find((user) => user.id === selectedUser)
+                  ?.language_count || 0,
+            }}
+            tripGoals={{
+              workout_count: tripGoals.workout,
+              diet_count: tripGoals.diet,
+              language_count: tripGoals.language,
+            }}
+            onProgressUpdate={(habit: keyof ProgressState,) =>
+              handleProgressUpdate(selectedUser!, habit)
             }
           />
         </>
