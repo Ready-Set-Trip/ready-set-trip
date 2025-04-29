@@ -14,7 +14,11 @@ router.post('/create', tripsController.createTrip, (req, res) => {
 });
 
 router.get('/groupStats/:tripId', tripsController.getGroupStats, (req, res) => {
-    res.status(200).json({ usersAndTrackers: res.locals.usersAndTrackers });
-})
+  res.status(200).json({ usersAndTrackers: res.locals.usersAndTrackers });
+});
+
+router.get('/validate-id/:tripId', tripsController.validate, (req, res) => {
+  res.sendStatus(200);
+});
 
 export default router;

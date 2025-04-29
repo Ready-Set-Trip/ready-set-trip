@@ -18,7 +18,7 @@ function App() {
       <Route path='/createJoinTrip' element={<CreateJoinTrip />} />
       <Route path='/tripTemplate' element={<TripTemplate />} />
       <Route path='/solopage' element={<SoloPage />} />
-      <Route path='/grouptrippage' element={<GroupTripPage />} />
+      <Route path='/grouptrippage/*' element={<GroupTripPage />} />
     </Routes>
   );
 }

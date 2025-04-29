@@ -25,9 +25,10 @@ const decodeTripId = (tripCode: string): number => {
 };
 
 interface TripsController {
-    createTrip(req: Request, res: Response, next: NextFunction): Promise<void>;
-    getGroupStats(req: Request, res: Response, next: NextFunction): Promise<void>;
-  }
+  createTrip(req: Request, res: Response, next: NextFunction): Promise<void>;
+  getGroupStats(req: Request, res: Response, next: NextFunction): Promise<void>;
+  validate(req: Request, res: Response, next: NextFunction): Promise<void>;
+}
 
 const tripsController: TripsController = {
   async createTrip(req, res, next) {
@@ -69,6 +70,20 @@ const tripsController: TripsController = {
         log: 'error in getGroupStats function',
         status: 500,
         message: { err: error.message },
+      });
+    }
+  },
+
+  async validate(req, res, next) {
+    const { tripId } = req.params;
+    const tripTableId = decodeTripId(tripId);
+    try {
+      const result = await db.query('SELECT * FROM trips WHERE id = $1', [tripTableId]);
+      return next();
+    } catch (error) {
+      return next({
+        log: 'trip ID not found',
+        status: 404,
       });
     }
   },

@@ -10,7 +10,7 @@ import beach1_icon from '../../assets/beach1.jpg';
 import './CreateJoinTrip.css';
 
 const CreateJoinTrip = () => {
-  const [id, setId] = useState('');
+  const [tripId, setId] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -22,10 +22,9 @@ const CreateJoinTrip = () => {
   const handleClick = async () => {
     //check if the id exist or not, if it is exist navigate to grouptrip page
     try {
-      const response = await fetch(`/api/validate-id/${id}`);
-      const data = await response.json();
-      if (response.ok && data.id) {
-        navigate(`/GroupTripPage/${id}`);
+      const response = await fetch(`/trips/validate-id/${tripId}`);
+      if (response.ok) {
+        navigate(`/GroupTripPage/${tripId}`);
       } else {
         setError('Invalid Trip ID');
       }
@@ -50,7 +49,7 @@ const CreateJoinTrip = () => {
         <input
           className='inputbox'
           type='text'
-          value={id}
+          value={tripId}
           onChange={handleChange}
           placeholder='Enter your id'
         />
