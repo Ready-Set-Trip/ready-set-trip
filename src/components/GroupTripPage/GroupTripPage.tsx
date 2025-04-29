@@ -9,8 +9,10 @@
 import React, { useState } from 'react';
 import SoloPage from '../SoloPage/SoloPage';
 import MessageBoard from './MessageBoard';
+import { useLocation } from 'react-router-dom';
 
 //LATER - figure out how to pass these numbers down and not hardcode ...
+
 const tripGoals = {
   workout: 20,
   diet: 15,
@@ -30,6 +32,9 @@ const calculateTotal = (progress: {
 const GroupTripPage: React.FC = () => {
   //useState for each user (keep track of which user is currentyl selected ... initialized to null (no user!))
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+
+  const location = useLocation();
+  const tripId = location.state?.tripId;
 
   //useState for any incremental progress for each user, in each of the 3 catgegories
   const [groupProgress, setGroupProgress] = useState([
@@ -64,8 +69,8 @@ const GroupTripPage: React.FC = () => {
     <div style={{ padding: '20px' }}>
       {!selectedUser ? (
         <>
-          <h2>Group Trip Page</h2>
-          <h3>Trip Id: pass it in here</h3>
+          <h2>Trip Name: </h2>
+          <h3>Trip Id: {tripId}</h3>
           <h3>Trip Goals:</h3>
           <ul>
             Workout: {tripGoals.workout} sessions <strong>|</strong> Diet:{' '}
@@ -85,7 +90,14 @@ const GroupTripPage: React.FC = () => {
                       fontWeight: 'bold',
                       fontSize: '18px',
                       padding: '10px',
-                      backgroundColor: index === 0 ? '#ffd700' : index === 1 ? '#f2e8e8' : index === 2 ? '#cd7f32': '#f0f0f0',
+                      backgroundColor:
+                        index === 0
+                          ? '#ffd700'
+                          : index === 1
+                          ? '#f2e8e8'
+                          : index === 2
+                          ? '#cd7f32'
+                          : '#f0f0f0',
                       borderRadius: '8px',
                       width: '100%',
                       textAlign: 'left',
