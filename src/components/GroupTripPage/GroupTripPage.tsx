@@ -30,13 +30,13 @@ const calculateTotal = (progress: Progress) => {
   return progress.workout + progress.diet + progress.language;
 };
 
-// type definitions
+//type definitions
 
-type Progress = {
+interface ProgressState {
   workout: number;
   diet: number;
   language: number;
-};
+}
 
 type UserProgress = {
   username: string;
@@ -45,6 +45,12 @@ type UserProgress = {
   diet: number;
   language: number;
 };
+
+type IncrementProgress = {
+  diet: number; 
+  language: number; 
+  workout: number;
+}
 
 //define page's react componenet
 const GroupTripPage: React.FC = () => {
@@ -56,6 +62,7 @@ const GroupTripPage: React.FC = () => {
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [groupProgress, setGroupProgress] = useState<UserProgress[]>([]);
+  const [incrementProgress, setIncrementProgress] = useState<IncrementProgress>( { diet: 0, language: 0, workout: 0}); 
 
   // const [groupStats, setGroupStats] = useState(null);
 
@@ -67,7 +74,9 @@ const GroupTripPage: React.FC = () => {
     }
     const fetchGroupStats = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/trips/groupStats/${tripId}`);
+        const res = await fetch(
+          `http://localhost:3000/trips/groupStats/${tripId}`
+        );
         if (!res.ok) {
           throw new Error('Failed to fetch group stats');
         }
@@ -97,26 +106,23 @@ const GroupTripPage: React.FC = () => {
   // if a username matches the username passed in, we update their progress
   // otherwise ... keep the user the same (don't update anything)
 
-  const handleProgressUpdate = async (userId: string, habitObj: { [key: string]: number }, updatedValue: number) => {
-    // why is the only thing console.logging habitObj?
-    console.log('hi');
-    console.log('userId', userId);
-    console.log('habitObj: ', habitObj); // why does only this one work???
-    console.log('habit obj keys', Object.keys(habitObj));
-    let habit: string = '';
-    if (habitObj.workout === 1) habit = 'workout';
-    else if (habitObj.diet === 1) habit = 'diet';
-    else if (habitObj.language === 1) habit = 'language';
-    console.log('habit', habit);
+  const handleProgressUpdate = async (
+    userId: string,
+    habit: 'workout' | 'diet' | 'language'
+  ) => {
+    console.log('UserId & habit', userId, habit);
 
     try {
-      const res = await fetch(`http://localhost:3000/users/${userId}/${habit}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ updatedValue }),
-      });
+      const res = await fetch(
+        `http://localhost:3000/trips/${userId}/${habit}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ updatedValue }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error('Failed to update progress on backend');
@@ -124,6 +130,11 @@ const GroupTripPage: React.FC = () => {
 
       const data = await res.json(); // your backend returns { countAfterIncrement: newCount }
       console.log('PATCH response:', data);
+
+      setIncrementProgress((prev) => ({
+        ...prev,
+        [habit]: prev[habit] + 1,
+      })); 
 
       setGroupProgress((prevProgress) =>
         prevProgress.map((user) =>
@@ -135,6 +146,8 @@ const GroupTripPage: React.FC = () => {
             : user
         )
       );
+      console.log('count after inc', data.countAfterIncrement); 
+
     } catch (err) {
       console.log('Error updating progress', err);
     }
@@ -230,7 +243,9 @@ const GroupTripPage: React.FC = () => {
           <button onClick={() => setSelectedUser(null)}>
             Back to Group Page
           </button>
+          
           <SoloPage
+
             username={
               groupProgress.find((user) => user.id === selectedUser)
                 ?.username || ''
@@ -240,8 +255,8 @@ const GroupTripPage: React.FC = () => {
                 groupProgress.find((user) => user.id === selectedUser)
                   ?.workout || 0,
               diet:
-                groupProgress.find((user) => user.id === selectedUser)
-                  ?.diet || 0,
+                groupProgress.find((user) => user.id === selectedUser)?.diet ||
+                0,
               language:
                 groupProgress.find((user) => user.id === selectedUser)
                   ?.language || 0,
@@ -251,9 +266,10 @@ const GroupTripPage: React.FC = () => {
               diet: tripGoals.diet,
               language: tripGoals.language,
             }}
-            onProgressUpdate={(habit: keyof ProgressState,) =>
-              handleProgressUpdate(selectedUser!, habit)
-            }
+            onProgressUpdate={(habit: 'workout' | 'diet' | 'language') => {
+              console.log('onprogressupdate', habit);
+              return handleProgressUpdate(selectedUser, habit);
+            }}
           />
         </>
       )}

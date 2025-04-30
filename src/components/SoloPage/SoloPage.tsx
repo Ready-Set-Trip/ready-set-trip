@@ -19,7 +19,7 @@ interface SoloPageProps {
   progress: ProgressState;
   tripGoals: { workout: number; diet: number; language: number };
   // prop function takes one arg progress -- iwhic is a ProgressState object, and returns nothign
-  onProgressUpdate: (progress: ProgressState) => void;
+  onProgressUpdate: (habit: keyof ProgressState) => void;
 }
 // react component page that takes 4 props from GroupTripPage ... handles incrementing each category as needed
 const SoloPage: React.FC<SoloPageProps> = ({
@@ -30,11 +30,11 @@ const SoloPage: React.FC<SoloPageProps> = ({
 }) => {
   // takes key of ProgressState -> so, must be workout, diet, or language ... updates amount up to goal amount
   const handleIncrement = (key: keyof ProgressState) => {
-    const updatedProgress = {
-      ...progress,
-      [key]: Math.min(progress[key] + 1, tripGoals[key]),
-    };
-    onProgressUpdate(updatedProgress); // Pass updated progress back to GroupTripPage
+    console.log('increment key', key); 
+    if (progress[key] <= tripGoals[key]) {
+       console.log('is less than trip goal', progress[key]); 
+      onProgressUpdate(key); // just pass the habit string
+    }
   };
 
   // renders the page ... progess.workout for example is the value currently in useState of Progress for "workout"
